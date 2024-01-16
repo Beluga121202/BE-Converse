@@ -9,12 +9,11 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -27,7 +26,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -37,6 +35,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'converse',
+    'rest_framework',
+    'djoser',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -70,17 +72,19 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'djangoProject.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    "default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": 'converse',
+        "HOST": '127.0.0.1',
+        'USER': 'root',
+        'PASSWORD': 'Anhquan@2002',
+        "PORT": '3306',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -100,7 +104,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
@@ -112,7 +115,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
@@ -122,3 +124,43 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = 'converse.User'
+# cors allowed origins
+CORS_ALLOW_ALL_ORIGINS = True
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+SIMPLE_JWT = {
+    "AUTH_HEADER_TYPES": ("JWT",),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=10),
+}
+DJOSER = {
+    'SERIALIZERS': {
+        'user_create': 'converse.serializers.UserCreateSerializer',
+        'current_user': 'converse.serializers.UserSerializer',
+        'user': 'converse.serializers.UserSerializer',
+    },
+    'SEND_ACTIVATION_EMAIL': True,
+    'ACTIVATION_URL': 'activate/?uid={uid}&token={token}',
+    'PASSWORD_RESET_CONFIRM_URL': 'reset-password/?uid={uid}&token={token}',
+    'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
+    # 'USER_CREATE_PASSWORD_RETYPE': True,
+    # 'SET_PASSWORD_RETYPE': True,
+}
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_FROM = 'conversedemo70@gmail.com'
+EMAIL_HOST_USER = 'conversedemo70@gmail.com'
+EMAIL_HOST_PASSWORD = 'byrs vupg fhef wwcm'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+# cors allowed origins
+DOMAIN = 'localhost:3000'
+MEDIA_URL = 'media/'
+
+MEDIA_ROOT = BASE_DIR / 'media'
