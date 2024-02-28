@@ -1,9 +1,13 @@
 from rest_framework import serializers
-from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer, UserSerializer as BaseUserSerializer
+from djoser.serializers import UserCreateSerializer as BaseUserCreateSerializer, UserSerializer as BaseUserSerializer, \
+    ActivationSerializer as BaseActivationSerializer, UserFunctionsMixin, \
+    SendEmailResetSerializer as BaseSendEmailResetSerializer
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
+
+from converse.models import Product
 
 user = get_user_model()
 
@@ -18,7 +22,8 @@ class UserCreateSerializer(BaseUserCreateSerializer):
         UniqueValidator(queryset=user.objects.all(), message="Đã tồn tại email")])
 
     class Meta(BaseUserCreateSerializer.Meta):
-        fields = ['id', 'username', 'password', 'first_name', 'last_name', 'email']
+        fields = ['id', 'username', 'password', 'first_name', 'last_name', 'email', 'phone_number', 'address', 'gender',
+                  'birthday']
 
     # def create(self, validated_data):
     #     User = super().create(validated_data)
@@ -66,7 +71,28 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'is_active': obj.is_active,
             'is_deactivated': obj.is_deactivated,
             'address': obj.address,
-            'phone_number': obj.phone_number
+            'phone_number': obj.phone_number,
+            'gender': obj.gender,
+            'birth_date': obj.birthday
         })
 
         return data
+
+
+class ActivationSerializer(BaseActivationSerializer):
+    default_error_messages = {
+        "stale_token": 'Tài khoản đã được kích hoạt'
+    }
+
+
+class SendEmailResetSerializer(BaseSendEmailResetSerializer, UserFunctionsMixin):
+    default_error_messages = {
+        "email_not_found": 'Email không tồn tại'
+    }
+
+
+class ProductSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Product
+        fields = ['id', 'product_type', 'product_id', 'product_name', 'img', 'quantity', 'price', 'discount', 'place',
+                  'product_line']

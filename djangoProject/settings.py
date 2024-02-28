@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -126,7 +127,6 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = 'converse.User'
 # cors allowed origins
-CORS_ALLOW_ALL_ORIGINS = True
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -144,6 +144,8 @@ DJOSER = {
         'user_create': 'converse.serializers.UserCreateSerializer',
         'current_user': 'converse.serializers.UserSerializer',
         'user': 'converse.serializers.UserSerializer',
+        "activation": "converse.serializers.ActivationSerializer",
+        "password_reset": "converse.serializers.SendEmailResetSerializer",
     },
     'SEND_ACTIVATION_EMAIL': True,
     'ACTIVATION_URL': 'activate/?uid={uid}&token={token}',
@@ -160,7 +162,9 @@ EMAIL_HOST_PASSWORD = 'byrs vupg fhef wwcm'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 # cors allowed origins
+CORS_ALLOW_ALL_ORIGINS = True
 DOMAIN = 'localhost:3000'
 MEDIA_URL = 'media/'
 
 MEDIA_ROOT = BASE_DIR / 'media'
+SITE_NAME = 'Converse'

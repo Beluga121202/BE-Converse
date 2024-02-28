@@ -16,20 +16,23 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from converse.views import CustomTokenObtainPairView
+from converse.views import CustomTokenObtainPairView, ProductViewSet, inventory_add, inventory_edit,page_gender
 from rest_framework import routers
 from django.conf import settings
 from django.conf.urls.static import static
 
-# router = routers.DefaultRouter()
-# router.register('profile', ProductViewSet)
+router = routers.DefaultRouter()
+router.register('product', ProductViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('restaurant/', include('converse.urls')),
     path('auth/jwt/create/', CustomTokenObtainPairView.as_view(), name='custom_jwt_create'),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.jwt')),
-    # path("", include(router.urls)),
+    path("", include(router.urls)),
+    path('page/', page_gender),
+    path("inventory/", inventory_add, name="inventory"),
+    path("inventory/<int:id>", inventory_edit, name="inventory_edit")
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
