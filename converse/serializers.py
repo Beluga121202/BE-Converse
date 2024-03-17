@@ -7,7 +7,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 
-from converse.models import Product
+from converse.models import Product, Banner, Order, OrderDetails, User
 
 user = get_user_model()
 
@@ -20,6 +20,8 @@ class UserCreateSerializer(BaseUserCreateSerializer):
         UniqueValidator(queryset=user.objects.all(), message="Tài khoản đã tồn tại")])
     email = serializers.EmailField(max_length=254, validators=[
         UniqueValidator(queryset=user.objects.all(), message="Đã tồn tại email")])
+    phone_number = serializers.CharField(max_length=254, validators=[
+        UniqueValidator(queryset=user.objects.all(), message="Số điện thoại đã được sử dụng")])
 
     class Meta(BaseUserCreateSerializer.Meta):
         fields = ['id', 'username', 'password', 'first_name', 'last_name', 'email', 'phone_number', 'address', 'gender',
@@ -94,5 +96,36 @@ class SendEmailResetSerializer(BaseSendEmailResetSerializer, UserFunctionsMixin)
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = ['id', 'product_type', 'product_id', 'product_name', 'img', 'quantity', 'price', 'discount', 'place',
-                  'product_line']
+        fields = ['id', 'product_type', 'product_id', 'product_name', 'img', 'quantity', 'price', 'color', 'discount',
+                  'place', 'product_line', 'cost_price']
+
+
+class BannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Banner
+        fields = ['id', 'title', 'img']
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['order_id', 'full_name', 'email', 'phone', 'shipping_address', 'status', 'payment_method',
+                  'total_price']
+
+
+class OrderDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderDetails
+        fields = ['order_id', 'product', 'price', 'quantity']
+
+
+class UserEditSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(max_length=254, validators=[
+        UniqueValidator(queryset=user.objects.all(), message="Đã tồn tại email")])
+    phone_number = serializers.CharField(max_length=254, validators=[
+        UniqueValidator(queryset=user.objects.all(), message="Số điện thoại đã được sử dụng")])
+
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email', 'phone_number', 'is_active', 'address', 'birthday',
+                  'gender']

@@ -16,7 +16,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from converse.views import CustomTokenObtainPairView, ProductViewSet, inventory_add, inventory_edit,page_gender
+from converse.views import CustomTokenObtainPairView, ProductViewSet, inventory_add, inventory_edit, page_gender, \
+    detail_product, banner, check_out, get_order, order_detail, change_status, get_customers, edit_customers
 from rest_framework import routers
 from django.conf import settings
 from django.conf.urls.static import static
@@ -31,8 +32,16 @@ urlpatterns = [
     path('auth/', include('djoser.urls.jwt')),
     path("", include(router.urls)),
     path('page/', page_gender),
+    path("shoes/<int:id>", detail_product),
+    path("banner/", banner),
     path("inventory/", inventory_add, name="inventory"),
-    path("inventory/<int:id>", inventory_edit, name="inventory_edit")
+    path("inventory/<int:id>", inventory_edit, name="inventory_edit"),
+    path("checkout/", check_out),
+    path("order/", get_order),
+    path("order_detail/<slug:id>", order_detail, name="order_detail"),
+    path("change_status/<slug:id>", change_status, name="change_status"),
+    path("customer/", get_customers),
+    path("customer_edit/<slug:id>", edit_customers, name="edit_customers"),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
