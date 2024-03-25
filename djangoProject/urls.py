@@ -17,7 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from converse.views import CustomTokenObtainPairView, ProductViewSet, inventory_add, inventory_edit, page_gender, \
-    detail_product, banner, check_out, get_order, order_detail, change_status, get_customers, edit_customers
+    detail_product, banner, check_out, get_order, order_detail, change_status, get_customers, edit_customers, \
+    calculate_revenue_and_profit_by_year, calculate_total_revenue_and_profit_for_years
 from rest_framework import routers
 from django.conf import settings
 from django.conf.urls.static import static
@@ -42,6 +43,9 @@ urlpatterns = [
     path("change_status/<slug:id>", change_status, name="change_status"),
     path("customer/", get_customers),
     path("customer_edit/<slug:id>", edit_customers, name="edit_customers"),
+    path("profit_by_year/", calculate_revenue_and_profit_by_year, name="calculate_revenue_and_profit_by_year"),
+    path("profit_for_years/", calculate_total_revenue_and_profit_for_years,
+         name="calculate_total_revenue_and_profit_for_years"),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -110,13 +110,13 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['order_id', 'full_name', 'email', 'phone', 'shipping_address', 'status', 'payment_method',
-                  'total_price']
+                  'total_price', 'created']
 
 
 class OrderDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderDetails
-        fields = ['order_id', 'product', 'price', 'quantity']
+        fields = ['order_id', 'product', 'price', 'quantity', 'cost_price']
 
 
 class UserEditSerializer(serializers.ModelSerializer):

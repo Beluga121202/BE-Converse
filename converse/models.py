@@ -16,7 +16,7 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     is_active = models.BooleanField(default=False)
     is_deactivated = models.BooleanField(default=False)
-    phone_number = models.CharField(max_length=12, default='0123456789',unique=True)
+    phone_number = models.CharField(max_length=12, default='0123456789', unique=True)
     address = models.CharField(max_length=255, default='TPHCM')
     gender = models.IntegerField(choices=GENDER_CHOICES, default=0)
     birthday = BirthdayField(default='2002-12-12', blank=True)
@@ -31,7 +31,7 @@ class Product(models.Model):
     quantity = models.IntegerField(default=0)
     price = models.IntegerField(default=0)
     cost_price = models.IntegerField(default=0)
-    discount = models.IntegerField(default=0)
+    discount = models.IntegerField(default=0, null=True)
     place = models.CharField(max_length=255, default='')
     product_line = models.CharField(max_length=255, default='')
 
@@ -58,3 +58,4 @@ class OrderDetails(models.Model):
     product = models.CharField(max_length=255, default='')
     quantity = models.IntegerField(default=0)
     price = models.IntegerField(default=0)
+    cost_price = models.IntegerField(default=0)

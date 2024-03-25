@@ -1,9 +1,13 @@
 import uuid
+import calendar
+from datetime import datetime
 from itertools import product
 
 # Create your views here.
 from django.contrib.auth import get_user_model
-from django.http import HttpResponse
+from django.db.models import Sum, Count, F
+from django.db.models.functions import TruncMonth
+from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny
@@ -77,7 +81,7 @@ def inventory_add(request):
         Product.objects.create(product_type=product_type, product_id=product_id, product_name=product_name,
                                img='images/' + file_name,
                                quantity=quantity, price=price, discount=discount, place=place,
-                               product_line=product_line, color=color,cost_price=cost_price)
+                               product_line=product_line, color=color, cost_price=cost_price)
         return HttpResponse("Success", status=status.HTTP_201_CREATED)
 
 
@@ -189,33 +193,35 @@ def banner(request):
 def check_out(request):
     if request.method == 'POST':
         order_id = request.data.get('order_id')
-        full_name = request.data.get('full_name')
-        phone = request.data.get('phone')
-        email = request.data.get('email')
-        shipping_address = request.data.get('shipping_address')
-        payment_method = request.data.get('payment_method')
-        total_price = request.data.get('total_price')
         cart = request.data.get('cart')
+        total_errors = []
+        for item in cart:
+            orders_product = Product.objects.get(product_id=item['product_id'])
+            quantity_available = orders_product.quantity
+            quantity_ordered = item['quantity']
+            if quantity_ordered > quantity_available:
+                total_errors.append(
+                    f"Số lượng sản phẩm '{orders_product.product_name}' trong kho không đủ. Số lượng còn lại: {quantity_available}")
+
+        if total_errors:
+            return Response({'error': total_errors}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = OrderSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        print(cart)
+
         for item in cart:
             OrderDetails.objects.create(
                 order_id=order_id,
                 price=item['product_price'] * (1 - item['discount'] / 100),
                 quantity=item['quantity'],
                 product=item['product_id'],
+                cost_price=item['cost_price']
             )
             orders_product = Product.objects.get(product_id=item['product_id'])
-            quantity = orders_product.quantity
-            orders_product.quantity = orders_product.quantity - item['quantity']
-            if orders_product.quantity < 0:
-                return Response({
-                    'error': f"Số lượng sản phẩm '{orders_product.product_name}' trong kho không đủ. Số lượng còn lại: {quantity}"},
-                    status=status.HTTP_400_BAD_REQUEST)
-            else:
-                orders_product.save()
+            orders_product.quantity -= item['quantity']
+            orders_product.save()
+
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -269,3 +275,61 @@ def edit_customers(request, id):
         user = User.objects.filter(username=id).first()
         user.delete()
         return Response({'success': 'Xoá thành công'}, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def calculate_revenue_and_profit_by_year(request):
+    if request.method == 'GET':
+        year = datetime.now().year
+        revenue_by_month = {}
+        profit_by_month = {}
+
+        for month in range(1, 13):
+            orders = Order.objects.filter(
+                status='Giao hàng thành công',
+                created__year=year,
+                created__month=month
+            )
+            total_revenue = 0
+            total_profit = 0
+
+            for order in orders:
+                order_details = OrderDetails.objects.filter(order_id=order)
+                for item in order_details:
+                    total_revenue += item.price * item.quantity
+                    total_profit += (item.price - item.cost_price) * item.quantity
+            revenue_by_month[calendar.month_abbr[month]] = total_revenue
+            profit_by_month[calendar.month_abbr[month]] = total_profit
+        print(revenue_by_month)
+        print(profit_by_month)
+        return JsonResponse({'revenue_by_month': revenue_by_month, 'profit_by_month': profit_by_month},
+                            status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def calculate_total_revenue_and_profit_for_years(request):
+    if request.method == 'GET':
+        current_year = datetime.now().year
+        years_to_check = [current_year, current_year - 1, current_year - 2]
+        result = {}
+
+        for year in years_to_check:
+            orders = Order.objects.filter(
+                status='Giao hàng thành công',
+                created__year=year
+            )
+
+            total_revenue = 0
+            total_profit = 0
+
+            for order in orders:
+                order_details = OrderDetails.objects.filter(order_id=order)
+                for item in order_details:
+                    total_revenue += item.price * item.quantity
+                    total_profit += (item.price - item.cost_price) * item.quantity
+
+            result[year] = {'total_revenue': total_revenue, 'total_profit': total_profit}
+
+        return JsonResponse(result, status=status.HTTP_200_OK)
